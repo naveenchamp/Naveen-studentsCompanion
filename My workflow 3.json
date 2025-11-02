@@ -1,0 +1,996 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "com.twilio.messaging.inbound-message.received"
+        ]
+      },
+      "name": "Twilio WhatsApp Inbound",
+      "type": "n8n-nodes-base.twilioTrigger",
+      "position": [
+        -2432,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "c7b47a97-a497-4c39-8e19-d03c2ff2b443",
+      "webhookId": "c77ed36e-5e98-428e-b130-b993d307167f",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User query: {{ $json.limited_text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are Student Companion AI! Explain clearly, motivate, and personalize based on provided userId."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -432,
+        64
+      ],
+      "id": "0a3d6ca0-63f1-435c-81a0-882dc4cb8a44",
+      "name": "Basic LLM Chain2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -432,
+        208
+      ],
+      "id": "640441e6-bda9-4e58-8ede-36f132554397",
+      "name": "GPT-4 Agent2",
+      "credentials": {
+        "openAiApi": {
+          "id": "cCnj37QTEdr3s1RG",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com{{$json.subresource_uris.media}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1904,
+        -144
+      ],
+      "id": "ae3491b2-f212-4f42-97d7-e8499732ea28",
+      "name": "Fetch Media Metadata",
+      "credentials": {
+        "twistOAuth2Api": {
+          "id": "zVcJ56fVAB1g5k4W",
+          "name": "Twist account"
+        },
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{$json.data.accountSid}}/Messages/{{$json.data.messageSid}}.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2160,
+        -144
+      ],
+      "id": "987f76a4-a6cd-4483-b619-e520f156d014",
+      "name": "Fetch Message Details",
+      "credentials": {
+        "twistOAuth2Api": {
+          "id": "zVcJ56fVAB1g5k4W",
+          "name": "Twist account"
+        },
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com{{ $('Fetch Message Details').item.json.subresource_uris.media }}\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1200,
+        64
+      ],
+      "id": "ef813f70-50ce-464d-9c9e-51fe222d76f5",
+      "name": "HTTP Request",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{$json.media_list[0].account_sid}}/Messages/{{$json.media_list[0].parent_sid}}/Media/{{$json.media_list[0].sid}}\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -912,
+        64
+      ],
+      "id": "b30f2e56-88bf-4046-899f-195bb78957e2",
+      "name": "HTTP Request1",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.media_list.length}}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "id": "d780e3fc-2227-424d-aeb3-f7fe9765270e"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7e3234ee-a9b8-452a-a2cf-7568fda6393b",
+                    "leftValue": "={{$json.media_list[0].content_type}}",
+                    "rightValue": "audio/ogg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8322d64c-ac5f-4267-9c4a-0343586dc76b",
+                    "leftValue": "={{$json.media_list[0].content_type}}",
+                    "rightValue": "image/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Doc"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c592483e-3895-4c86-8407-a5b1ddcac3b9",
+                    "leftValue": "={{$json.media_list[0].content_type}}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -1712,
+        -176
+      ],
+      "id": "719f9a63-4616-4782-b7ba-ee5406ea7ac6",
+      "name": "Input Switch1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User query: {{$('Fetch Message Details').item.json.body || $json.data.body || $json.text}}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are Student Companion AI! Explain clearly, motivate, and personalize based on provided userId."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1264,
+        -736
+      ],
+      "id": "831e009b-79b7-45b1-b9da-8af785e88288",
+      "name": "Basic LLM Chain3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1200,
+        -512
+      ],
+      "id": "ae00de32-7de7-46f3-93a1-6270e3ac6b23",
+      "name": "GPT-4 Agent3",
+      "credentials": {
+        "openAiApi": {
+          "id": "cCnj37QTEdr3s1RG",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -912,
+        -336
+      ],
+      "id": "2ba5f0b6-012a-4108-b525-39d87e6213d3",
+      "name": "Transcribe a recording1",
+      "credentials": {
+        "openAiApi": {
+          "id": "cCnj37QTEdr3s1RG",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "User query: {{$json.Body}}\nUser ID: {{$json.userId}}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are Student Companion AI! Explain clearly, motivate, and personalize based on provided userId."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -672,
+        -336
+      ],
+      "id": "bcfed2ff-5988-465d-829b-22b55b04a468",
+      "name": "Basic LLM Chain4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -672,
+        -192
+      ],
+      "id": "ff4d44c5-f45e-4426-9964-c69ed13e30b6",
+      "name": "GPT-4 Agent4",
+      "credentials": {
+        "openAiApi": {
+          "id": "BFZaQTr3Ga4l7keJ",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "={{ $('Twilio WhatsApp Inbound').item.json.data.to }}",
+        "to": "={{ $('Twilio WhatsApp Inbound').item.json.data.from }}",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -688
+      ],
+      "id": "f04d61ea-3e16-4829-9266-b119f134c854",
+      "name": "whatsapp reply1",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User query:\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are Student Companion AI! Explain clearly, motivate, and personalize based on provided userId."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -688,
+        464
+      ],
+      "id": "af2ff831-6887-48aa-9051-5f82ac46a43b",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        688
+      ],
+      "id": "3ecec309-627b-46c4-a9f2-b19a7787bce2",
+      "name": "GPT-4 Agent",
+      "credentials": {
+        "openAiApi": {
+          "id": "cCnj37QTEdr3s1RG",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com{{ $('Fetch Message Details').item.json.subresource_uris.media }}\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1200,
+        464
+      ],
+      "id": "8a6f3aeb-4185-494d-97a4-85ec4b4b77d3",
+      "name": "HTTP Request2",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twilio.com/2010-04-01/Accounts/{{$json.media_list>[0].account_sid}}/Messages/{{$json.media_list[0].parent_sid}}/Media/{{$json.media_list[0].sid}}\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -912,
+        464
+      ],
+      "id": "b28b44ab-2a7f-40a2-be57-5d3e7ec9f051",
+      "name": "HTTP Request3",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "={{ $('Twilio WhatsApp Inbound').item.json.data.to }}",
+        "to": "={{ $('Twilio WhatsApp Inbound').item.json.data.from }}",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -336
+      ],
+      "id": "b05b6682-5096-4ba8-9631-a6c241ed36a6",
+      "name": "whatsapp reply",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "={{ $('Twilio WhatsApp Inbound').item.json.data.to }}",
+        "to": "={{ $('Twilio WhatsApp Inbound').item.json.data.from }}",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        64
+      ],
+      "id": "152b62f0-a1ee-4770-8a1e-ca2dbba0aae4",
+      "name": "whatsapp reply2",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "={{ $('Twilio WhatsApp Inbound').item.json.data.to }}",
+        "to": "={{ $('Twilio WhatsApp Inbound').item.json.data.from }}",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        464
+      ],
+      "id": "29ddc296-9124-412c-bae2-5f9eae89f733",
+      "name": "whatsapp reply3",
+      "credentials": {
+        "twilioApi": {
+          "id": "dilSaGFYnXirUqcD",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "translate",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1200,
+        -336
+      ],
+      "id": "f414ab7b-487d-46c6-9b25-cb2dd693183e",
+      "name": "Translate a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "cCnj37QTEdr3s1RG",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Document\n\nDocuments (such as PDFs or DOCX) can be processed through dedicated parsing/extraction steps, similar to images and audio.\n\nExtracted content can follow the same pipeline as text for further LLM-based analysis or responses.",
+        "height": 528,
+        "width": 1568
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1504,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "ee2ef90c-80a6-4d18-bd24-d14fdae8e4e9",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Image\n\nTypically involves an \"Analyze an image\" or \"Fetch Media Metadata\" step.\n\nImages can be analyzed for content, metadata, or passed through image processing/recognition models.\n\nImage extraction and analysis nodes allow for further handling or forwarding.",
+        "height": 304,
+        "width": 1440,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1376,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "834e0096-1035-42a7-85bc-d6b2465c4ed8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Voice/Audio\n\nFlows usually include a \"Transcribe a recording\" step.\n\nConverts audio/voice to text via an automated transcription node.\n\nThe transcribed text can then be passed to LLM/text analysis nodes.",
+        "height": 368,
+        "width": 1328,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1440,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "99bad272-dc72-4d05-b7ae-55da0e2c16cd",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Text\n\nDirectly processed: Passes straight to the LLM or other text analysis nodes.\n\nCan be enhanced with RAG (context retrieval) for smarter, personalized responses.",
+        "height": 432,
+        "width": 1744,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1408,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "1befef74-ca38-440d-8e1b-74d3c9843612",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "={{ $('Fetch Message Details').item.json.body || \"get image details\" }}\n",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        64
+      ],
+      "id": "9caf753c-40b4-4749-842b-1558cf1237cf",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Q9loKfoK0hBQ1nzX",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const maxLength = 1000;\nlet text = $json.content.parts[0].text || '';\nif (text.length > maxLength) {\n  text = text.substring(0, maxLength);\n}\nreturn [{ json: { limited_text: text } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        64
+      ],
+      "id": "801bb440-1f55-4716-ab92-3d33475528fa",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const data = $json.data || {};\n  const body = data.body || $json.text || '';\n  const from = data.from || '';\n  const to = data.to || '';\n  return [{\n    json: {\n      ...$json,\n      body,\n      from,\n      to\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      error: error.message,\n      original: $json\n    }\n  }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -688
+      ],
+      "id": "0c22c179-a7e6-424b-8bba-a128462484ef",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "content": "# General Flow (Edge/Step Notes):\n\nIncoming WhatsApp/inbound messages are routed based on type: text, audio, image, or document.\n\nEach content type routes through their appropriate \"processing\" node (text analysis, transcribe recording, image analysis, etc.).\n\nMultiple response nodes (labeled as \"whatsapp reply\") ensure that the correct processed response is sent back via WhatsApp for each possible input.",
+        "height": 736,
+        "width": 1008,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2592,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "ea4fd1b6-d7a3-48be-b8ed-09dd23af9552",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Twilio WhatsApp Inbound": {
+      "main": [
+        [
+          {
+            "node": "Fetch Message Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "whatsapp reply2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4 Agent2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Media Metadata": {
+      "main": [
+        [
+          {
+            "node": "Input Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Message Details": {
+      "main": [
+        [
+          {
+            "node": "Fetch Media Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Switch1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Translate a recording",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4 Agent3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain4": {
+      "main": [
+        [
+          {
+            "node": "whatsapp reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4 Agent4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4 Agent": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "whatsapp reply3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate a recording": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "whatsapp reply1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3f94e575-6d73-4760-a088-d29bdbaa84c1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "acd024ff504891ce8a74dc1e45afc330d1cac858fd1a4bfb37e3cc91040cd1a9"
+  },
+  "id": "jdkf3LDxboxeh1ts",
+  "tags": []
+}
